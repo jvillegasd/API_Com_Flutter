@@ -13,7 +13,7 @@ class UserInfo extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           ListTile(
-            leading: accountIcon(),
+            leading: Icon(Icons.account_circle),
             title: Text(userEmail),
             subtitle: Text("Current logged user"),
             isThreeLine: true,
@@ -21,9 +21,5 @@ class UserInfo extends StatelessWidget {
         ],
       )
     );
-  }
-
-  Icon accountIcon() {
-    return Icon(Icons.account_circle);
   }
 }

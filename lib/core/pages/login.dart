@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_api_consumer_login/core/providers/userProvider.dart';
 import 'package:simple_api_consumer_login/core/pages/home.dart';
+import 'package:simple_api_consumer_login/core/widgets/customTextField.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -27,23 +28,39 @@ class LoginState extends State<Login> {
             appBar: AppBar(title: Text("Login")),
             body: Form(
                 key: _formKey,
-                child: Column(children: <Widget>[
-                  Expanded(
-                    child: TextFormField(
-                        controller: controllerEmail,
-                        validator: (value) {
-                          if (value.isEmpty) return "Please, enter an email!";
-                          return null;
-                        }),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                  CustomTextField(
+                    labelText: "Email",
+                    hintText: "Type your email here!",
+                    prefixIcon: Icon(Icons.email),
+                    obscureText: false,
+                    validator: (email) {
+                      Pattern pattern = r'^.+@[a-zA-Z]+\.{1}[a-zA-Z]+(\.{0,1}[a-zA-Z]+)$';
+                      RegExp regex = RegExp(pattern);
+
+                      if (email.isEmpty) return "Please, enter an email!";
+                      if (!regex.hasMatch(email)) return "Invalid email address";
+                      return null;
+                    },
+                    textFieldController: controllerEmail
                   ),
-                  Expanded(
-                    child: TextFormField(
-                      controller: controllerPass,
-                      validator: (value) {
-                        if (value.isEmpty) return "Please, enter a password!";
-                        return null;
-                      },
-                    ),
+                  CustomTextField(
+                    labelText: "Password",
+                    hintText: "Type your password here!",
+                    prefixIcon: Icon(Icons.lock),
+                    obscureText: true,
+                    validator: (password) {
+                      Pattern pattern = r'^(\w|[^ ]){6,}$';
+                      RegExp regex = RegExp(pattern);
+
+                      if (password.isEmpty) return "Please, enter an password!";
+                      if (!regex.hasMatch(password)) return "Invalid password";
+                      return null;
+                    },
+                    textFieldController: controllerPass
                   ),
                   RaisedButton(
                       onPressed: () async {
