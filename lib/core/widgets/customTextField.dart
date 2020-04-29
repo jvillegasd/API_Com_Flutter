@@ -21,14 +21,14 @@ class CustomTextField extends StatelessWidget {
     double phoneWidth = MediaQuery.of(context).size.width;
     return Center(
       child: Container(
-        width: phoneWidth * 0.70,
+        width: phoneWidth * 0.65,
         padding: EdgeInsets.fromLTRB(0.0, 5.0, 0.0, 5.0),
-        child: customTF()
+        child: _customTF()
       ),
     );
   }
 
-  Widget customTF() {
+  Widget _customTF() {
     return TextFormField(
       validator: validator,
       controller: textFieldController,
@@ -40,11 +40,11 @@ class CustomTextField extends StatelessWidget {
         filled: true,
         fillColor: Colors.white70,
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12.0)),
+          borderRadius: BorderRadius.all(Radius.circular(20.0)),
           borderSide: BorderSide(color: Colors.blue, width: 2)
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(10.0)),
+          borderRadius: BorderRadius.all(Radius.circular(18.0)),
           borderSide: BorderSide(color: Colors.blue)
         ),
         labelText: labelText,
