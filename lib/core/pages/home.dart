@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_api_consumer_login/core/providers/userProvider.dart';
 import 'package:simple_api_consumer_login/core/pages/login.dart';
+import 'package:simple_api_consumer_login/core/widgets/userInfo.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -20,21 +21,27 @@ class HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Consumer<UserProvider>(builder: (context, userProvider, child) {
       if (userProvider.isLogged) {
+        String currentUserEmail = userProvider.currentUser.email;
         return Scaffold(
             appBar: AppBar(title: Text("Home")),
-            body: Container(
-              child: Column(
-                children: <Widget>[
-                  Text('Email: ${userProvider.currentUser.email}'),
-                  FlatButton(
-                      onPressed: () async {
-                        await userProvider.logOut();
-                      },
-                      child: Text('Logout'))
-                ],
-              ),
+            body: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                UserInfo(userEmail: currentUserEmail),
+                logOutButton(userProvider)
+              ]
             ));
       } else return Login();
     });
+  }
+
+  Widget logOutButton(UserProvider userProvider) {
+    return RaisedButton(
+      child: Text("Logout"),
+      onPressed: () async {
+        await userProvider.logOut();
+      },
+    );
   }
 }

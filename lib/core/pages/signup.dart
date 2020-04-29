@@ -15,14 +15,13 @@ class SignUpState extends State<SignUp> {
   @override
   void initState() {
     super.initState();
-
     Provider.of<UserProvider>(context, listen: false).authentication();
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<UserProvider>(builder: (context, userProvider, child) {
-      if (userProvider.isLogged) {
+      if (!userProvider.isLogged) {
         return Scaffold(
             appBar: AppBar(title: Text("Sign in")),
             body: Form(
