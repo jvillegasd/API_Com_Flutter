@@ -10,7 +10,6 @@ class Home extends StatefulWidget {
 }
 
 class HomeState extends State<Home> {
-
   @override
   void initState() {
     super.initState();
@@ -22,17 +21,20 @@ class HomeState extends State<Home> {
     return Consumer<UserProvider>(builder: (context, userProvider, child) {
       if (userProvider.isLogged) {
         String currentUserEmail = userProvider.currentUser.email;
+        String currentUserPassowrd = userProvider.currentUser.password;
         return Scaffold(
             appBar: AppBar(title: Text("Home")),
             body: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                UserInfo(userEmail: currentUserEmail),
-                logOutButton(userProvider)
-              ]
-            ));
-      } else return Login();
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  UserInfo(
+                      userEmail: currentUserEmail,
+                      userPassword: currentUserPassowrd),
+                  logOutButton(userProvider)
+                ]));
+      } else
+        return Login();
     });
   }
 
