@@ -97,13 +97,13 @@ class LoginState extends State<Login> {
                       await userProvider.signIn(email, password);
                     }
                   },
-                  child: Text('Sign up')),
+                  child: Text('Sign in')),
               FlatButton(
                   onPressed: () {
                     _formKey.currentState.reset();
-                    Navigator.pushNamed(context, '/signin');
+                    Navigator.pushNamed(context, '/signup');
                   },
-                  child: Text('Sign in'))
+                  child: Text('Sign up'))
             ]));
   }
 }
