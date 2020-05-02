@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:simple_api_consumer_login/core/providers/userProvider.dart';
 import 'package:simple_api_consumer_login/core/pages/login.dart';
 import 'package:simple_api_consumer_login/core/widgets/customTextField.dart';
+import 'package:simple_api_consumer_login/core/models/user.dart';
 
 class SignUp extends StatefulWidget {
   SignUpState createState() => SignUpState();
@@ -12,6 +13,8 @@ class SignUpState extends State<SignUp> {
   final _formKey = GlobalKey<FormState>();
   final controllerEmail = new TextEditingController();
   final controllerPass = new TextEditingController();
+  final controllerUsername = new TextEditingController();
+  final controllerName = new TextEditingController();
 
   @override
   void initState() {
@@ -91,9 +94,16 @@ class SignUpState extends State<SignUp> {
                     if (_formKey.currentState.validate()) {
                       String email = controllerEmail.text.toString();
                       String password = controllerPass.text.toString();
+                      String username = controllerUsername.toString();
+                      String name = controllerName.toString();
+                      User newUser = User(email, password, username, name);
+
                       controllerPass.clear();
                       controllerEmail.clear();
-                      await userProvider.signUp(email, password);
+                      controllerUsername.clear();
+                      controllerName.clear();
+                      
+                      await userProvider.signUp(newUser);
 
                       if (userProvider.isLogged) {
                         Navigator.pop(context);

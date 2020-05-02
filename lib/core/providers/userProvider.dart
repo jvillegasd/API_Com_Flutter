@@ -15,40 +15,48 @@ class UserProvider extends ChangeNotifier {
     bool sharedLogged = prefs.getBool('isLogged') ?? false;
     final String sharedEmail = prefs.getString('email') ?? null;
     final String sharedPassword = prefs.getString('password') ?? null;
+    final String sharedUsername = prefs.getString('username') ?? null;
+    final String sharedName = prefs.getString('name') ?? null;
     
     if (sharedEmail == null || sharedPassword == null) return;
     if (sharedLogged) {
-      _currentUser = User(sharedEmail, sharedPassword);
+      _currentUser = User(sharedEmail, sharedPassword, sharedUsername, sharedName);
       _isLogged = true;
       notifyListeners();
     }
   }
 
-  signIn(String email, String password) async {
+  signIn(User newUser) async {
     SharedPreferences prefs = await _prefs;
     final String sharedEmail = prefs.getString('email') ?? null;
     final String sharedPassword = prefs.getString('password') ?? null;
+    final String sharedUsername = prefs.getString('username') ?? null;
+    final String sharedName = prefs.getString('name') ?? null;
 
-    if (sharedEmail == null || sharedPassword == null) return;
-    if (sharedEmail == email && sharedPassword == password) {
+    if (sharedEmail == null || sharedPassword == null || sharedUsername == null || sharedName == null) return;
+    if (sharedEmail == newUser.email && sharedPassword == newUser.password) {
       await prefs.setBool('isLogged', true);
-
-      _currentUser = User(sharedEmail, sharedPassword);
+      
+      newUser.username = sharedUsername;
+      newUser.name = sharedName;
+      _currentUser = newUser;
       _isLogged = true;
       notifyListeners();
     }
   }
 
-  signUp(String email, String password) async {
+  signUp(User newUser) async {
     SharedPreferences prefs = await _prefs;
     final String sharedEmail = prefs.getString('email') ?? null;
 
-    if (sharedEmail != email) {
-      await prefs.setString('email', email);
-      await prefs.setString('password', password);
+    if (sharedEmail != newUser.email) {
+      await prefs.setString('email', newUser.email);
+      await prefs.setString('password', newUser.password);
+      await prefs.setString('username', newUser.username);
+      await prefs.setString('name', newUser.name);
       await prefs.setBool('isLogged', true);
 
-      _currentUser = User(email, password);
+      _currentUser = newUser;
       _isLogged = true;
       notifyListeners();
     }
@@ -56,7 +64,7 @@ class UserProvider extends ChangeNotifier {
 
   logOut() async {
     SharedPreferences prefs = await _prefs;
-    await prefs.setBool('isLogged', false);
+    await prefs.clear();
 
     _isLogged = false;
     notifyListeners();

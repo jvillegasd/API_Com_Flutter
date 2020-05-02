@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:simple_api_consumer_login/core/providers/userProvider.dart';
 import 'package:simple_api_consumer_login/core/pages/home.dart';
 import 'package:simple_api_consumer_login/core/widgets/customTextField.dart';
+import 'package:simple_api_consumer_login/core/models/user.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -92,9 +93,10 @@ class LoginState extends State<Login> {
                     if (_formKey.currentState.validate()) {
                       String email = controllerEmail.text.toString();
                       String password = controllerPass.text.toString();
+                      User newUser = User(email, password, "", "");
                       controllerPass.clear();
                       controllerEmail.clear();
-                      await userProvider.signIn(email, password);
+                      await userProvider.signIn(newUser);
                     }
                   },
                   child: Text('Sign in')),
