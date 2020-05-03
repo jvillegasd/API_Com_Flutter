@@ -43,4 +43,18 @@ class ApiClient {
       return response;
     }
   }
+
+  Future<Map<String, dynamic>> checkToken(String token) async {
+    Map<String, dynamic> body = { "token": token };
+    
+    try {
+      Response<Map> response = await _dio.post("/check/token", data: body);
+      return response.data;
+    } on DioError catch (error) {
+      Map<String, dynamic> response = { "error": "An error has ocurred" };
+      if (error.response != null && error.response.data.containsKey("error")) response = error.response.data;
+      return response;
+    }
+  }
+
 }

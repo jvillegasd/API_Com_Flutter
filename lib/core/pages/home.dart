@@ -22,6 +22,8 @@ class HomeState extends State<Home> {
       if (userProvider.isLogged) {
         String currentUserEmail = userProvider.currentUser.email;
         String currentUserPassowrd = userProvider.currentUser.password;
+        String currentUserFullname = userProvider.currentUser.name;
+        String currentUsername = userProvider.currentUser.username;
         return Scaffold(
             appBar: AppBar(title: Text("Home")),
             body: Column(
@@ -30,7 +32,9 @@ class HomeState extends State<Home> {
                 children: <Widget>[
                   UserInfo(
                       userEmail: currentUserEmail,
-                      userPassword: currentUserPassowrd),
+                      userPassword: currentUserPassowrd,
+                      userFullname: currentUserFullname,
+                      username: currentUsername),
                   logOutButton(userProvider)
                 ]));
       } else

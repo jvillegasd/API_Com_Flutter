@@ -89,14 +89,15 @@ class LoginState extends State<Login> {
               RaisedButton(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20.0)),
-                  onPressed: () async {
+                  onPressed: () {
                     if (_formKey.currentState.validate()) {
                       String email = controllerEmail.text.toString();
                       String password = controllerPass.text.toString();
                       User newUser = User(email, password, "", "");
                       controllerPass.clear();
                       controllerEmail.clear();
-                      await userProvider.signIn(newUser);
+                      
+                      userProvider.signIn(newUser);
                     }
                   },
                   child: Text('Sign in')),

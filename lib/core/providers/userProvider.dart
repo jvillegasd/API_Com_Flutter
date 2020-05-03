@@ -7,6 +7,8 @@ class UserProvider extends ChangeNotifier {
   User _currentUser;
   bool _isLogged = false;
   String _token = "";
+  String _refreshToken = "";
+  String _tokenType = "";
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   ApiClient apiClient = new ApiClient();
 
@@ -21,36 +23,63 @@ class UserProvider extends ChangeNotifier {
     final String sharedPassword = prefs.getString('password') ?? null;
     final String sharedUsername = prefs.getString('username') ?? null;
     final String sharedName = prefs.getString('name') ?? null;
+    final String sharedToken = prefs.getString("token") ?? null;
+    final String sharedRefreshToken = prefs.getString("refreshToken") ?? null;
+    final String sharedTokenType = prefs.getString("tokenType") ?? null;
 
-    if (sharedEmail == null || sharedPassword == null) return;
-    if (sharedLogged) {
-      _currentUser =
-          User(sharedEmail, sharedPassword, sharedUsername, sharedName);
-      _isLogged = true;
-      notifyListeners();
+    if (await _somethingIsCached()) {
+      if (sharedLogged && await _checkToken(prefs)) {
+        _currentUser =
+            User(sharedEmail, sharedPassword, sharedUsername, sharedName);
+        _token = sharedToken;
+        _refreshToken = sharedRefreshToken;
+        _tokenType = sharedTokenType;
+        _isLogged = true;
+        notifyListeners();
+      }
     }
   }
 
-  signIn(User newUser) async {
+  Future<String> signIn(User newUser) async {
     SharedPreferences prefs = await _prefs;
     final String sharedEmail = prefs.getString('email') ?? null;
     final String sharedPassword = prefs.getString('password') ?? null;
-    final String sharedUsername = prefs.getString('username') ?? null;
-    final String sharedName = prefs.getString('name') ?? null;
 
-    if (sharedEmail == null ||
-        sharedPassword == null ||
-        sharedUsername == null ||
-        sharedName == null) return;
-    if (sharedEmail == newUser.email && sharedPassword == newUser.password) {
-      await prefs.setBool('isLogged', true);
+    if (await _somethingIsCached()) {
+      if (sharedEmail == newUser.email && sharedPassword == newUser.password) {
+        if (await _checkToken(prefs)) {
+          final String sharedName = prefs.getString("name");
+          final String sharedUsername = prefs.getString("username");
+          final String sharedToken = prefs.getString("token");
+          final String sharedRefreshToken = prefs.getString("refreshToken");
+          final String sharedTokenType = prefs.getString("tokenType");
 
-      newUser.username = sharedUsername;
-      newUser.name = sharedName;
-      _currentUser = newUser;
-      _isLogged = true;
-      notifyListeners();
+          await prefs.setBool("isLogged", true);
+
+          newUser.name = sharedName;
+          newUser.username = sharedUsername;
+          _isLogged = true;
+          _token = sharedToken;
+          _refreshToken = sharedRefreshToken;
+          _tokenType = sharedTokenType;
+          notifyListeners();
+          return "User logged";
+        } else
+          return await _signIn(newUser, prefs);
+      } else {
+        return await _signIn(newUser, prefs);
+      }
+    } else {
+      return await _signIn(newUser, prefs);
     }
+  }
+
+  logOut() async {
+    SharedPreferences prefs = await _prefs;
+    await prefs.setBool('isLogged', false);
+
+    _isLogged = false;
+    notifyListeners();
   }
 
   Future<String> signUp(User newUser) async {
@@ -65,11 +94,16 @@ class UserProvider extends ChangeNotifier {
         await prefs.setString('password', newUser.password);
         await prefs.setString('username', newUser.username);
         await prefs.setString('name', newUser.name);
+        await prefs.setString('token', response["token"]);
+        await prefs.setString('refreshToken', response["refreshToken"]);
+        await prefs.setString("tokenType", response["type"]);
         await prefs.setBool('isLogged', true);
 
         _currentUser = newUser;
         _isLogged = true;
-        _token = "${response["type"]} ${response["token"]}";
+        _token = response["token"];
+        _refreshToken = response["refreshToken"];
+        _tokenType = response["type"];
         notifyListeners();
         return "User created";
       } else
@@ -78,11 +112,52 @@ class UserProvider extends ChangeNotifier {
       return "User already cached in local storage";
   }
 
-  logOut() async {
-    SharedPreferences prefs = await _prefs;
-    await prefs.clear();
+  Future<String> _signIn(User newUser, SharedPreferences prefs) async {
+    Map<String, dynamic> response = await apiClient.signIn(newUser);
 
-    _isLogged = false;
-    notifyListeners();
+    if (!response.containsKey("error")) {
+      await prefs.setString('email', newUser.email);
+      await prefs.setString('password', newUser.password);
+      await prefs.setString('username', response["username"]);
+      await prefs.setString('name', response["name"]);
+      await prefs.setString('token', response["token"]);
+      await prefs.setString('refreshToken', response["refreshToken"]);
+      await prefs.setString("tokenType", response["type"]);
+      await prefs.setBool('isLogged', true);
+
+      newUser.username = response["username"];
+      newUser.name = response["name"];
+      _currentUser = newUser;
+      _isLogged = true;
+      _token = response["token"];
+      _refreshToken = response["refreshToken"];
+      _tokenType = response["type"];
+      notifyListeners();
+      return "User logged";
+    } else
+      return response["error"];
+  }
+
+  Future<bool> _somethingIsCached() async {
+    SharedPreferences prefs = await _prefs;
+    final String sharedEmail = prefs.getString('email') ?? null;
+    final String sharedPassword = prefs.getString('password') ?? null;
+    final String sharedUsername = prefs.getString('username') ?? null;
+    final String sharedName = prefs.getString('name') ?? null;
+    final String sharedToken = prefs.getString('token') ?? null;
+
+    return sharedEmail != null &&
+        sharedPassword != null &&
+        sharedUsername != null &&
+        sharedName != null &&
+        sharedToken != null;
+  }
+
+  Future<bool> _checkToken(SharedPreferences prefs) async {
+    String token = prefs.getString("token");
+
+    Map<String, dynamic> response = await apiClient.checkToken(token);
+
+    return (!response.containsKey("error")) ? response["valid"] : false;
   }
 }
