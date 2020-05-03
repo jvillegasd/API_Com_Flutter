@@ -8,28 +8,39 @@ class ApiClient {
   ApiClient() {
     _dio = new Dio();
     _dio.options.baseUrl = _baseUrl;
-    _dio.options.contentType = Headers.formUrlEncodedContentType;
   }
 
   Future<Map<String, dynamic>> signUp(User newUser) async {
-    Map<String, dynamic> jsonRequest = {
+    Map<String, dynamic> body = {
       "email": newUser.email,
       "password": newUser.password,
       "username": newUser.username,
       "name": newUser.name
     };
 
-    Response<Map> response = await _dio.post("/signup", data: jsonRequest);
-    return response.data;
+    try {
+      Response<Map> response = await _dio.post("/signup", data: body);
+      return response.data;
+    } on DioError catch (error) {
+      Map<String, dynamic> response = { "error": "An error has ocurred" };
+      if (error.response != null && error.response.data.containsKey("error")) response = error.response.data;
+      return response;
+    }
   }
 
   Future<Map<String, dynamic>> signIn(User newUser) async {
-    Map<String, dynamic> jsonRequest = {
+    Map<String, dynamic> body = {
       "email": newUser.email,
       "password": newUser.password
     };
 
-    Response<Map> response = await _dio.post("/signin", data: jsonRequest);
-    return response.data;
+    try {
+      Response<Map> response = await _dio.post("/signin", data: body);
+      return response.data;
+    } on DioError catch (error) {
+      Map<String, dynamic> response = { "error": "An error has ocurred" };
+      if (error.response != null && error.response.data.containsKey("error")) response = error.response.data;
+      return response;
+    }
   }
 }

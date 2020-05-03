@@ -9,12 +9,12 @@ class SignUp extends StatefulWidget {
   SignUpState createState() => SignUpState();
 }
 
-class SignUpState extends State<SignUp> {
+class SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final controllerEmail = new TextEditingController();
-  final controllerPass = new TextEditingController();
-  final controllerUsername = new TextEditingController();
-  final controllerName = new TextEditingController();
+  final _controllerEmail = new TextEditingController();
+  final _controllerPass = new TextEditingController();
+  final _controllerUsername = new TextEditingController();
+  final _controllerName = new TextEditingController();
 
   @override
   void initState() {
@@ -33,7 +33,7 @@ class SignUpState extends State<SignUp> {
             body: Center(
                 child: Container(
                     width: phoneWidth * 0.80,
-                    height: phoneHeight * 0.45,
+                    height: phoneHeight * 0.50,
                     child: Card(
                       elevation: 10,
                       shape: RoundedRectangleBorder(
@@ -59,6 +59,28 @@ class SignUpState extends State<SignUp> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               CustomTextField(
+                labelText: "Name",
+                hintText: "Type your name here!",
+                prefixIcon: Icon(Icons.face),
+                obscureText: false,
+                validator: (name) {
+                  if (name.isEmpty) return "Please, enter a name!";
+                  return null;
+                },
+                textFieldController: _controllerName,
+              ),
+              CustomTextField(
+                labelText: "Username",
+                hintText: "Type your username here!",
+                prefixIcon: Icon(Icons.account_circle),
+                obscureText: false,
+                validator: (username) {
+                  if (username.isEmpty) return "Please, enter an username!";
+                  return null;
+                },
+                textFieldController: _controllerUsername,
+              ),
+              CustomTextField(
                   labelText: "Email",
                   hintText: "Type your email here!",
                   prefixIcon: Icon(Icons.email),
@@ -72,7 +94,7 @@ class SignUpState extends State<SignUp> {
                     if (!regex.hasMatch(email)) return "Invalid email address";
                     return null;
                   },
-                  textFieldController: controllerEmail),
+                  textFieldController: _controllerEmail),
               CustomTextField(
                   labelText: "Password",
                   hintText: "Type your password here!",
@@ -86,32 +108,37 @@ class SignUpState extends State<SignUp> {
                     if (!regex.hasMatch(password)) return "Invalid password";
                     return null;
                   },
-                  textFieldController: controllerPass),
+                  textFieldController: _controllerPass),
               RaisedButton(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20.0)),
                   onPressed: () async {
                     if (_formKey.currentState.validate()) {
-                      String email = controllerEmail.text.toString();
-                      String password = controllerPass.text.toString();
-                      String username = controllerUsername.toString();
-                      String name = controllerName.toString();
+                      String email = _controllerEmail.text.toString();
+                      String password = _controllerPass.text.toString();
+                      String username = _controllerUsername.text.toString();
+                      String name = _controllerName.text.toString();
                       User newUser = User(email, password, username, name);
 
-                      controllerPass.clear();
-                      controllerEmail.clear();
-                      controllerUsername.clear();
-                      controllerName.clear();
-                      
-                      await userProvider.signUp(newUser);
+                      _controllerPass.clear();
+                      _controllerEmail.clear();
+                      _controllerUsername.clear();
+                      _controllerName.clear();
 
-                      if (userProvider.isLogged) {
-                        Navigator.pop(context);
-                      } else
-                        print("User registered");
+                      _signUp(context, newUser, userProvider);
                     }
                   },
-                  child: Text('Submit')),
+                  child: Text('Submit'))
             ]));
+  }
+
+  Future<void> _signUp(BuildContext context, User newUser, UserProvider userProvider) async {
+    String response = await userProvider.signUp(newUser);
+
+    print(response);
+    if (userProvider.isLogged) {
+      Navigator.pop(context);
+    } else
+      print("User registered");
   }
 }
