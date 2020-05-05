@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:simple_api_consumer_login/core/models/user.dart';
 
@@ -57,4 +59,28 @@ class ApiClient {
     }
   }
 
+  Future<Map<String, dynamic>> getCourses(User currentUser, String token) async {
+    try {
+      Map<String, dynamic> headers = { HttpHeaders.authorizationHeader: token };
+      Response<List> response = await _dio.get("/${currentUser.username}/courses", options: Options(headers: headers));
+      return { "courses": response.data };
+    } on DioError catch (error) {
+      print(error);
+      Map<String, dynamic> response = { "error": "An error has occured" };
+      if (error.response != null && error.response.data.containsKey("error")) response = error.response.data;
+      return response;
+    }
+  }
+
+  Future<Map<String, dynamic>> createCourse(User currentUser, String token) async {
+    try {
+      Map<String, dynamic> headers = { HttpHeaders.authorizationHeader: token };
+      Response<Map> response = await _dio.post("/${currentUser.username}/courses", options: Options(headers: headers));
+      return response.data;
+    } on DioError catch (error) {
+      Map<String, dynamic> response = { "error": "An error has occured" };
+      if (error.response != null && error.response.data.containsKey("error")) response = error.response.data;
+      return response;
+    }
+  }
 }

@@ -160,4 +160,12 @@ class UserProvider extends ChangeNotifier {
 
     return (!response.containsKey("error")) ? response["valid"] : false;
   }
+
+  Future<Map<String, dynamic>> getCourses() async {
+    return await apiClient.getCourses(_currentUser, "${_tokenType} ${_token}");
+  }
+
+  Future<Map<String, dynamic>> createCourse() async {
+    return await apiClient.createCourse(_currentUser, "${_tokenType} ${_token}");
+  }
 }

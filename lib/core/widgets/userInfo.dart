@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class UserInfo extends StatelessWidget {
-
   final String userEmail;
   final String userPassword;
   final String userFullname;
@@ -22,7 +21,6 @@ class UserInfo extends StatelessWidget {
             leading: Icon(Icons.account_circle),
             title: Text(userFullname),
             subtitle: Text(info),
-
             isThreeLine: true,
           )
         ],
