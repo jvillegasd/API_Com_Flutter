@@ -76,7 +76,7 @@ class LoginFormState extends State<LoginForm> {
                       });
                     },
                   ),
-                  Text("Stay logged")
+                  Text("Remember me!")
                 ],
               ),
               Container(
