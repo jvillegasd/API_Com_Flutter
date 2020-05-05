@@ -2,26 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:simple_api_consumer_login/core/providers/userProvider.dart';
 import 'package:simple_api_consumer_login/core/models/user.dart';
 import 'package:simple_api_consumer_login/core/widgets/customTextField.dart';
+import 'package:simple_api_consumer_login/core/widgets/dialogMessage.dart';
 
-class SignInForm extends StatelessWidget {
+class SignInForm extends StatefulWidget {
   final UserProvider userProvider;
   final formKey;
   final controllerEmail;
   final controllerPass;
   final controllerUsername;
   final controllerName;
+  bool _isLoading = false;
+  User newUser;
 
-  const SignInForm(
-      {this.userProvider,
+  SignInForm(
+      {Key key,
+      this.userProvider,
       this.formKey,
       this.controllerEmail,
       this.controllerPass,
       this.controllerUsername,
-      this.controllerName});
+      this.controllerName})
+      : super(key: key);
 
+  SignInFormState createState() => SignInFormState();
+}
+
+class SignInFormState extends State<SignInForm> {
   Widget build(BuildContext context) {
     return Form(
-        key: formKey,
+        key: widget.formKey,
         child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -35,7 +44,7 @@ class SignInForm extends StatelessWidget {
                   if (name.isEmpty) return "Please, enter a name!";
                   return null;
                 },
-                textFieldController: controllerName,
+                textFieldController: widget.controllerName,
               ),
               CustomTextField(
                 labelText: "Username",
@@ -46,7 +55,7 @@ class SignInForm extends StatelessWidget {
                   if (username.isEmpty) return "Please, enter an username!";
                   return null;
                 },
-                textFieldController: controllerUsername,
+                textFieldController: widget.controllerUsername,
               ),
               CustomTextField(
                   labelText: "Email",
@@ -62,7 +71,7 @@ class SignInForm extends StatelessWidget {
                     if (!regex.hasMatch(email)) return "Invalid email address";
                     return null;
                   },
-                  textFieldController: controllerEmail),
+                  textFieldController: widget.controllerEmail),
               CustomTextField(
                   labelText: "Password",
                   hintText: "Type your password here!",
@@ -76,38 +85,58 @@ class SignInForm extends StatelessWidget {
                     if (!regex.hasMatch(password)) return "Invalid password";
                     return null;
                   },
-                  textFieldController: controllerPass),
-              RaisedButton(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.0)),
-                  onPressed: () async {
-                    if (formKey.currentState.validate()) {
-                      String email = controllerEmail.text.toString();
-                      String password = controllerPass.text.toString();
-                      String username = controllerUsername.text.toString();
-                      String name = controllerName.text.toString();
-                      User newUser = User(email, password, username, name);
+                  textFieldController: widget.controllerPass),
+              Container(
+                  child: (widget._isLoading)
+                      ? _signUp(widget.userProvider, widget.newUser)
+                      : RaisedButton(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20.0)),
+                          onPressed: () async {
+                            if (widget.formKey.currentState.validate()) {
+                              String email =
+                                  widget.controllerEmail.text.toString();
+                              String password =
+                                  widget.controllerPass.text.toString();
+                              String username =
+                                  widget.controllerUsername.text.toString();
+                              String name =
+                                  widget.controllerName.text.toString();
 
-                      controllerPass.clear();
-                      controllerEmail.clear();
-                      controllerUsername.clear();
-                      controllerName.clear();
-
-                      _signUp(context, newUser, userProvider);
-                    }
-                  },
-                  child: Text('Submit'))
+                              setState(() {
+                                widget.newUser =
+                                    User(email, password, username, name);
+                                widget._isLoading = true;
+                              });
+                            }
+                          },
+                          child: Text('Submit')))
             ]));
   }
 
-  Future<void> _signUp(
-      BuildContext context, User newUser, UserProvider userProvider) async {
-    String response = await userProvider.signUp(newUser);
-
-    print(response);
-    if (userProvider.isLogged) {
-      Navigator.pop(context);
-    } else
-      print("User registered");
+  Widget _signUp(UserProvider userProvider, User newUser) {
+    userProvider.signUp(newUser).then((response) {
+      if (!response.containsKey("error")) {
+        setState(() {
+          widget.controllerPass.clear();
+          widget.controllerEmail.clear();
+          widget.controllerUsername.clear();
+          widget.controllerName.clear();
+          Navigator.pop(context);
+        });
+        return null;
+      } else {
+        setState(() {
+          widget.newUser = null;
+          widget._isLoading = false;
+        });
+        return showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return DialogMessage(title: "Error", message: response["error"]);
+            });
+      }
+    });
+    return Center(child: CircularProgressIndicator());
   }
 }

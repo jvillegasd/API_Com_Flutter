@@ -40,7 +40,7 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  Future<String> signIn(User newUser) async {
+  Future<Map<String, dynamic>> signIn(User newUser) async {
     SharedPreferences prefs = await _prefs;
     final String sharedEmail = prefs.getString('email') ?? null;
     final String sharedPassword = prefs.getString('password') ?? null;
@@ -63,7 +63,7 @@ class UserProvider extends ChangeNotifier {
           _refreshToken = sharedRefreshToken;
           _tokenType = sharedTokenType;
           notifyListeners();
-          return "User logged";
+          return { "message": "User logged" };
         } else
           return await _signIn(newUser, prefs);
       } else {
@@ -82,7 +82,7 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<String> signUp(User newUser) async {
+  Future<Map<String, dynamic>> signUp(User newUser) async {
     SharedPreferences prefs = await _prefs;
     final String sharedEmail = prefs.getString('email') ?? null;
 
@@ -105,14 +105,14 @@ class UserProvider extends ChangeNotifier {
         _refreshToken = response["refreshToken"];
         _tokenType = response["type"];
         notifyListeners();
-        return "User created";
+        return { "message": "User created" };
       } else
-        return response["error"];
+        return { "error": response["error"] };
     } else
-      return "User already cached in local storage";
+      return { "error": "User already cached in local storage" };
   }
 
-  Future<String> _signIn(User newUser, SharedPreferences prefs) async {
+  Future<Map<String, dynamic>> _signIn(User newUser, SharedPreferences prefs) async {
     Map<String, dynamic> response = await apiClient.signIn(newUser);
 
     if (!response.containsKey("error")) {
@@ -133,9 +133,9 @@ class UserProvider extends ChangeNotifier {
       _refreshToken = response["refreshToken"];
       _tokenType = response["type"];
       notifyListeners();
-      return "User logged";
+      return { "message": "User logged" };
     } else
-      return response["error"];
+      return { "error": response["error"] };
   }
 
   Future<bool> _somethingIsCached() async {
