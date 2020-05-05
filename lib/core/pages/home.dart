@@ -26,31 +26,23 @@ class HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Consumer<UserProvider>(builder: (context, userProvider, child) {
       if (userProvider.isLogged) {
-        if (_isLoading) {
-          _getCourses(userProvider);
+        if (!_isLoading) {
+          //FAB responsive operations
+          double phoneWidth = MediaQuery.of(context).size.width;
+          double responseWidth = phoneWidth * 0.911;
+          bool isLandscape =
+              MediaQuery.of(context).orientation == Orientation.landscape;
+          if (isLandscape) responseWidth = phoneWidth * 0.952;
+
           return Scaffold(
-            appBar: AppBar(title: Text("Courses")),
-            body: Center(
-                child: Column(
+              appBar: AppBar(title: Text("Courses")),
+              body: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-              _getCourses(userProvider),
-              Text("Loading courses")
-            ])),
-          );
-        }
-        double phoneHeight = MediaQuery.of(context).size.height;
-        return Scaffold(
-            appBar: AppBar(title: Text("Courses")),
-            body: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Container(
-                      padding: EdgeInsets.all(10.0),
-                      child: _list(),
-                      height: phoneHeight * 0.70),
-                  Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[Flexible(child: _list())]),
+              floatingActionButton: Container(
+                  width: responseWidth,
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       FloatingActionButton(
@@ -58,13 +50,25 @@ class HomeState extends State<Home> {
                           await userProvider.logOut();
                         },
                         tooltip: "Logout",
-                        child: Icon(Icons.close),
+                        child: Icon(Icons.exit_to_app),
                         backgroundColor: Colors.red,
+                        elevation: 15.0,
                       ),
-                      Container(child: _addButton(userProvider))
+                      _addButton(userProvider)
                     ],
-                  )
-                ]));
+                  )));
+        } else {
+          return Scaffold(
+            appBar: AppBar(title: Text("Courses")),
+            body: Center(
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                  _getCourses(userProvider),
+                  Text("Loading courses")
+                ])),
+          );
+        }
       } else
         return Login();
     });
@@ -119,7 +123,7 @@ class HomeState extends State<Home> {
             });
       }
     });
-    return Center(child: CircularProgressIndicator());
+    return CircularProgressIndicator();
   }
 
   Widget _getCourses(UserProvider userProvider) {

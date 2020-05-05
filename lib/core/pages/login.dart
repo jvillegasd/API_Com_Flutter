@@ -13,43 +13,71 @@ class LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
   final controllerEmail = new TextEditingController();
   final controllerPass = new TextEditingController();
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    Provider.of<UserProvider>(context, listen: false).authentication();
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<UserProvider>(builder: (context, userProvider, child) {
-      double phoneWidth = MediaQuery.of(context).size.width;
-      double phoneHeight = MediaQuery.of(context).size.height;
       if (!userProvider.isLogged) {
-        return Scaffold(
-            appBar: AppBar(title: Text("Login")),
-            body: Center(
-                child: Container(
-                    width: phoneWidth * 0.80,
-                    height: phoneHeight * 0.45,
-                    child: Card(
-                      elevation: 10,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20.0)),
-                      child: new Column(
-                        children: <Widget>[
-                          Container(
-                              padding: EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 0.0),
-                              child: LoginForm(
+        if (!_isLoading) {
+          //Login card responsive operations
+          double phoneWidth = MediaQuery.of(context).size.width;
+          double phoneHeight = MediaQuery.of(context).size.height;
+
+          return Scaffold(
+              appBar: AppBar(title: Text("Login")),
+              body: Center(
+                  child: Container(
+                      width: phoneWidth * 0.80,
+                      height: phoneHeight * 0.45,
+                      child: Card(
+                        elevation: 10,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20.0)),
+                        child: new Column(
+                          children: <Widget>[
+                            Container(
+                                padding:
+                                    EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 0.0),
+                                child: LoginForm(
                                   userProvider: userProvider,
                                   formKey: _formKey,
                                   controllerEmail: controllerEmail,
-                                  controllerPass: controllerPass))
-                        ],
-                      ),
-                    ))));
+                                  controllerPass: controllerPass,
+                                  rememberUser: userProvider.rememberUser,
+                                ))
+                          ],
+                        ),
+                      ))));
+        } else {
+          return Scaffold(
+              appBar: AppBar(title: Text("Login")),
+              body: Center(
+                  child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  _authentication(userProvider),
+                  Text("Loading")
+                ],
+              )));
+        }
       } else
         return Home();
     });
+  }
+
+  Widget _authentication(UserProvider userProvider) {
+    userProvider.authentication().then((response) {
+      setState(() {
+        _isLoading = false;
+      });
+      return null;
+    });
+    return Center(child: CircularProgressIndicator());
   }
 }

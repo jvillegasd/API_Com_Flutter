@@ -9,6 +9,7 @@ class LoginForm extends StatefulWidget {
   final controllerEmail;
   final controllerPass;
   final UserProvider userProvider;
+  bool rememberUser;
   bool _isLoading = false;
   User newUser;
 
@@ -17,13 +18,15 @@ class LoginForm extends StatefulWidget {
       this.userProvider,
       this.formKey,
       this.controllerEmail,
-      this.controllerPass})
+      this.controllerPass,
+      this.rememberUser})
       : super(key: key);
 
   LoginFormState createState() => LoginFormState();
 }
 
 class LoginFormState extends State<LoginForm> {
+
   Widget build(BuildContext context) {
     return Form(
         key: widget.formKey,
@@ -60,6 +63,22 @@ class LoginFormState extends State<LoginForm> {
                     return null;
                   },
                   textFieldController: widget.controllerPass),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Checkbox(
+                    value: widget.rememberUser,
+                    onChanged: (bool value) {
+                      widget.userProvider.setRememberUser(value).then((response) {
+                        setState(() {
+                          widget.rememberUser = value;
+                        });
+                      });
+                    },
+                  ),
+                  Text("Stay logged")
+                ],
+              ),
               Container(
                   child: (widget._isLoading)
                       ? _signIn(widget.userProvider, widget.newUser)

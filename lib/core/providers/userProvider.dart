@@ -6,6 +6,7 @@ import 'package:simple_api_consumer_login/core/services/apiClient.dart';
 class UserProvider extends ChangeNotifier {
   User _currentUser;
   bool _isLogged = false;
+  bool _rememberUser = false;
   String _token = "";
   String _refreshToken = "";
   String _tokenType = "";
@@ -13,8 +14,16 @@ class UserProvider extends ChangeNotifier {
   ApiClient apiClient = new ApiClient();
 
   bool get isLogged => _isLogged;
+  bool get rememberUser => _rememberUser;
   User get currentUser => _currentUser;
   String get token => _token;
+
+  Future<void> setRememberUser(bool newStatus) async {
+    SharedPreferences prefs = await _prefs;
+    await prefs.setBool("rememberUser", newStatus);
+    _rememberUser = newStatus;
+    notifyListeners();
+  }
 
   authentication() async {
     SharedPreferences prefs = await _prefs;
@@ -26,6 +35,7 @@ class UserProvider extends ChangeNotifier {
     final String sharedToken = prefs.getString("token") ?? null;
     final String sharedRefreshToken = prefs.getString("refreshToken") ?? null;
     final String sharedTokenType = prefs.getString("tokenType") ?? null;
+    bool sharedRememberUser = prefs.getBool("rememberUser") ?? false;
 
     if (await _somethingIsCached()) {
       if (sharedLogged && await _checkToken(prefs)) {
@@ -35,9 +45,10 @@ class UserProvider extends ChangeNotifier {
         _refreshToken = sharedRefreshToken;
         _tokenType = sharedTokenType;
         _isLogged = true;
-        notifyListeners();
       }
     }
+    _rememberUser = sharedRememberUser;
+    notifyListeners();
   }
 
   Future<Map<String, dynamic>> signIn(User newUser) async {
@@ -63,7 +74,7 @@ class UserProvider extends ChangeNotifier {
           _refreshToken = sharedRefreshToken;
           _tokenType = sharedTokenType;
           notifyListeners();
-          return { "message": "User logged" };
+          return {"message": "User logged"};
         } else
           return await _signIn(newUser, prefs);
       } else {
@@ -76,8 +87,10 @@ class UserProvider extends ChangeNotifier {
 
   logOut() async {
     SharedPreferences prefs = await _prefs;
-    await prefs.setBool('isLogged', false);
-
+    if (_rememberUser) {
+      await prefs.setBool('isLogged', false);
+    } else
+      await prefs.clear();
     _isLogged = false;
     notifyListeners();
   }
@@ -105,14 +118,15 @@ class UserProvider extends ChangeNotifier {
         _refreshToken = response["refreshToken"];
         _tokenType = response["type"];
         notifyListeners();
-        return { "message": "User created" };
+        return {"message": "User created"};
       } else
-        return { "error": response["error"] };
+        return {"error": response["error"]};
     } else
-      return { "error": "User already cached in local storage" };
+      return {"error": "User already cached in local storage"};
   }
 
-  Future<Map<String, dynamic>> _signIn(User newUser, SharedPreferences prefs) async {
+  Future<Map<String, dynamic>> _signIn(
+      User newUser, SharedPreferences prefs) async {
     Map<String, dynamic> response = await apiClient.signIn(newUser);
 
     if (!response.containsKey("error")) {
@@ -133,9 +147,9 @@ class UserProvider extends ChangeNotifier {
       _refreshToken = response["refreshToken"];
       _tokenType = response["type"];
       notifyListeners();
-      return { "message": "User logged" };
+      return {"message": "User logged"};
     } else
-      return { "error": response["error"] };
+      return {"error": response["error"]};
   }
 
   Future<bool> _somethingIsCached() async {
@@ -166,6 +180,7 @@ class UserProvider extends ChangeNotifier {
   }
 
   Future<Map<String, dynamic>> createCourse() async {
-    return await apiClient.createCourse(_currentUser, "${_tokenType} ${_token}");
+    return await apiClient.createCourse(
+        _currentUser, "${_tokenType} ${_token}");
   }
 }
