@@ -25,7 +25,7 @@ class ApiClient {
       return response.data;
     } on DioError catch (error) {
       Map<String, dynamic> response = { "error": "An error has ocurred" };
-      if (error.response != null && error.response.data.containsKey("error")) response = error.response.data;
+      if (error.response != null && error.response.data != null && error.response.data.containsKey("error")) response = error.response.data;
       return response;
     }
   }
@@ -41,7 +41,7 @@ class ApiClient {
       return response.data;
     } on DioError catch (error) {
       Map<String, dynamic> response = { "error": "An error has ocurred" };
-      if (error.response != null && error.response.data.containsKey("error")) response = error.response.data;
+      if (error.response != null && error.response.data != null && error.response.data.containsKey("error")) response = error.response.data;
       return response;
     }
   }
@@ -54,7 +54,7 @@ class ApiClient {
       return response.data;
     } on DioError catch (error) {
       Map<String, dynamic> response = { "error": "An error has ocurred" };
-      if (error.response != null && error.response.data.containsKey("error")) response = error.response.data;
+      if (error.response != null && error.response.data != null && error.response.data.containsKey("error")) response = error.response.data;
       return response;
     }
   }
@@ -67,7 +67,7 @@ class ApiClient {
     } on DioError catch (error) {
       print(error);
       Map<String, dynamic> response = { "error": "An error has occured" };
-      if (error.response != null && error.response.data.containsKey("error")) response = error.response.data;
+      if (error.response != null && error.response.data != null && error.response.data.containsKey("error")) response = error.response.data;
       return response;
     }
   }
@@ -79,7 +79,7 @@ class ApiClient {
       return response.data;
     } on DioError catch (error) {
       Map<String, dynamic> response = { "error": "An error has occured" };
-      if (error.response != null && error.response.data.containsKey("error")) response = error.response.data;
+      if (error.response != null && error.response.data != null && error.response.data.containsKey("error")) response = error.response.data;
       return response;
     }
   }

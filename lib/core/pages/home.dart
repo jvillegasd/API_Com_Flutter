@@ -5,22 +5,80 @@ import 'package:simple_api_consumer_login/core/pages/login.dart';
 import 'package:simple_api_consumer_login/core/models/course.dart';
 import 'package:simple_api_consumer_login/core/widgets/courseCard.dart';
 import 'package:simple_api_consumer_login/core/widgets/dialogMessage.dart';
+import '../utils/hexColor.dart';
 
 class Home extends StatefulWidget {
   @override
   HomeState createState() => HomeState();
 }
 
-class HomeState extends State<Home> {
+class HomeState extends State<Home> with SingleTickerProviderStateMixin {
+  //Widget variables to use
   List<Course> currentUserCourses = new List<Course>();
   bool _isLoading = true;
   bool _isLoadingRequest = false;
 
+  //Toggle animation variables
+  bool _toggleIsOpened = false;
+  AnimationController _animationController;
+  Animation<Color> _animateColor;
+  Animation<double> _animateIcon;
+  Animation<double> _translateButton;
+  Curve _curve = Curves.easeOut;
+  double _fabHeight = 56.0;
+  double _fabElevation = 0.0;
+
   @override
-  void initState() {
+  initState() {
+    //Toogle animatation operations
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 500)
+    )..addListener(() {
+      setState(() {
+        if (_toggleIsOpened) {
+          _fabElevation = 15.0;
+        } else {
+          _fabElevation = 0.0;
+        }
+      });
+    });
+    _animateIcon = Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
+    _animateColor = ColorTween(
+      begin: Colors.blue,
+      end: Colors.red
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Interval(0.00, 1.00, curve: _curve))
+    );
+    _translateButton = Tween<double>(
+      begin: _fabHeight,
+      end: -14.0
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Interval(0.0, 0.75, curve: _curve)
+    ));
+
+    //Normal init state operations
     super.initState();
     Provider.of<UserProvider>(context, listen: false).authentication();
   }
+
+  @override
+  dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  animate() {
+    if (!_toggleIsOpened) {
+      _animationController.forward();
+    } else {
+      _animationController.reverse();
+    }
+    _toggleIsOpened = !_toggleIsOpened;
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -43,18 +101,21 @@ class HomeState extends State<Home> {
               floatingActionButton: Container(
                   width: responseWidth,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: <Widget>[
-                      FloatingActionButton(
-                        onPressed: () async {
-                          await userProvider.logOut();
-                        },
-                        tooltip: "Logout",
-                        child: Icon(Icons.exit_to_app),
-                        backgroundColor: Colors.red,
-                        elevation: 15.0,
+                      Transform(
+                        transform: Matrix4.translationValues(_translateButton.value * 3.0, 0.0, 0.0),
+                        child: _logoutButton(userProvider)
                       ),
-                      _addButton(userProvider)
+                      Transform(
+                        transform: Matrix4.translationValues(_translateButton.value * 2.0, 0.0, 0.0),
+                        child: _addButton(userProvider)
+                      ),
+                      Transform(
+                        transform: Matrix4.translationValues(_translateButton.value, 0.0, 0.0),
+                        child: _resetButton(userProvider)
+                      ),
+                      _toggleButton()
                     ],
                   )));
         } else {
@@ -86,6 +147,18 @@ class HomeState extends State<Home> {
     );
   }
 
+  Widget _toggleButton() {
+    return FloatingActionButton(
+      backgroundColor: _animateColor.value,
+      onPressed: animate,
+      tooltip: "Toggle",
+      child: AnimatedIcon(
+        icon: AnimatedIcons.menu_close,
+        progress: _animateIcon
+      )
+    );
+  }
+
   Widget _addButton(UserProvider userProvider) {
     return (_isLoadingRequest)
         ? _addCourse(userProvider)
@@ -97,8 +170,31 @@ class HomeState extends State<Home> {
             },
             tooltip: "Create a new course",
             child: Icon(Icons.add),
-            elevation: 15.0,
+            elevation: _fabElevation,
           );
+  }
+
+  Widget _logoutButton(UserProvider userProvider) {
+    return FloatingActionButton(
+      onPressed: () async {
+        await userProvider.logOut();
+      },
+      tooltip: "Logout",
+      child: Icon(Icons.exit_to_app),
+      backgroundColor: Colors.red,
+      elevation: _fabElevation,
+    );
+  }
+
+  Widget _resetButton(UserProvider userProvider) {
+    return FloatingActionButton(
+      onPressed: () async {},
+      tooltip: "Reset DB",
+      child: Icon(Icons.loop),
+      backgroundColor: HexColors.toColor("#EBF300"),
+      foregroundColor: Colors.blueGrey,
+      elevation: _fabElevation,
+    );
   }
 
   Widget _addCourse(UserProvider userProvider) {
@@ -115,6 +211,7 @@ class HomeState extends State<Home> {
         setState(() {
           _isLoadingRequest = false;
         });
+        print(response["message"]);
         return showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -123,7 +220,11 @@ class HomeState extends State<Home> {
             });
       }
     });
-    return CircularProgressIndicator();
+    return Container(
+      child: CircularProgressIndicator(),
+      height: _fabHeight,
+      width: _fabHeight,
+    );
   }
 
   Widget _getCourses(UserProvider userProvider) {
