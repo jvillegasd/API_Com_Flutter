@@ -16,7 +16,8 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   //Widget variables to use
   List<Course> currentUserCourses = new List<Course>();
   bool _isLoading = true;
-  bool _isLoadingRequest = false;
+  bool _isLoadingAddCourse = false;
+  bool _isLoadingRestartDB = false;
 
   //Toggle animation variables
   bool _toggleIsOpened = false;
@@ -31,33 +32,27 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   @override
   initState() {
     //Toogle animatation operations
-    _animationController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 500)
-    )..addListener(() {
-      setState(() {
-        if (_toggleIsOpened) {
-          _fabElevation = 15.0;
-        } else {
-          _fabElevation = 0.0;
-        }
-      });
-    });
-    _animateIcon = Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
-    _animateColor = ColorTween(
-      begin: Colors.blue,
-      end: Colors.red
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Interval(0.00, 1.00, curve: _curve))
-    );
-    _translateButton = Tween<double>(
-      begin: _fabHeight,
-      end: -14.0
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Interval(0.0, 0.75, curve: _curve)
-    ));
+    _animationController =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 500))
+          ..addListener(() {
+            setState(() {
+              if (_toggleIsOpened) {
+                _fabElevation = 15.0;
+              } else {
+                _fabElevation = 0.0;
+              }
+            });
+          });
+    _animateIcon =
+        Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
+    _animateColor = ColorTween(begin: Colors.blue, end: Colors.red).animate(
+        CurvedAnimation(
+            parent: _animationController,
+            curve: Interval(0.00, 1.00, curve: _curve)));
+    _translateButton = Tween<double>(begin: _fabHeight, end: -14.0).animate(
+        CurvedAnimation(
+            parent: _animationController,
+            curve: Interval(0.0, 0.75, curve: _curve)));
 
     //Normal init state operations
     super.initState();
@@ -78,7 +73,6 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
     }
     _toggleIsOpened = !_toggleIsOpened;
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -104,17 +98,17 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: <Widget>[
                       Transform(
-                        transform: Matrix4.translationValues(_translateButton.value * 3.0, 0.0, 0.0),
-                        child: _logoutButton(userProvider)
-                      ),
+                          transform: Matrix4.translationValues(
+                              _translateButton.value * 3.0, 0.0, 0.0),
+                          child: _logoutButton(userProvider)),
                       Transform(
-                        transform: Matrix4.translationValues(_translateButton.value * 2.0, 0.0, 0.0),
-                        child: _addButton(userProvider)
-                      ),
+                          transform: Matrix4.translationValues(
+                              _translateButton.value * 2.0, 0.0, 0.0),
+                          child: _addButton(userProvider)),
                       Transform(
-                        transform: Matrix4.translationValues(_translateButton.value, 0.0, 0.0),
-                        child: _resetButton(userProvider)
-                      ),
+                          transform: Matrix4.translationValues(
+                              _translateButton.value, 0.0, 0.0),
+                          child: _resetButton(userProvider)),
                       _toggleButton()
                     ],
                   )));
@@ -149,23 +143,20 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   Widget _toggleButton() {
     return FloatingActionButton(
-      backgroundColor: _animateColor.value,
-      onPressed: animate,
-      tooltip: "Toggle",
-      child: AnimatedIcon(
-        icon: AnimatedIcons.menu_close,
-        progress: _animateIcon
-      )
-    );
+        backgroundColor: _animateColor.value,
+        onPressed: animate,
+        tooltip: "Toggle",
+        child: AnimatedIcon(
+            icon: AnimatedIcons.menu_close, progress: _animateIcon));
   }
 
   Widget _addButton(UserProvider userProvider) {
-    return (_isLoadingRequest)
+    return (_isLoadingAddCourse)
         ? _addCourse(userProvider)
         : FloatingActionButton(
             onPressed: () {
               setState(() {
-                _isLoadingRequest = true;
+                _isLoadingAddCourse = true;
               });
             },
             tooltip: "Create a new course",
@@ -187,14 +178,20 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   }
 
   Widget _resetButton(UserProvider userProvider) {
-    return FloatingActionButton(
-      onPressed: () async {},
-      tooltip: "Reset DB",
-      child: Icon(Icons.loop),
-      backgroundColor: HexColors.toColor("#EBF300"),
-      foregroundColor: Colors.blueGrey,
-      elevation: _fabElevation,
-    );
+    return (_isLoadingRestartDB)
+        ? _restartCourses(userProvider)
+        : FloatingActionButton(
+            onPressed: () {
+              setState(() {
+                _isLoadingRestartDB = true;
+              });
+            },
+            tooltip: "Reset DB",
+            child: Icon(Icons.loop),
+            backgroundColor: HexColors.toColor("#FDE74C"),
+            foregroundColor: Colors.blueGrey,
+            elevation: _fabElevation,
+          );
   }
 
   Widget _addCourse(UserProvider userProvider) {
@@ -203,20 +200,19 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
         Course newCourse = Course(response["id"], response["name"],
             response["professor"], response["students"]);
         setState(() {
-          _isLoadingRequest = false;
+          _isLoadingAddCourse = false;
           currentUserCourses.add(newCourse);
         });
         return null;
       } else {
         setState(() {
-          _isLoadingRequest = false;
+          _isLoadingAddCourse = false;
         });
         print(response["message"]);
         return showDialog(
             context: context,
             builder: (BuildContext context) {
-              return DialogMessage(
-                  title: "Message", message: response["message"]);
+              return DialogMessage(title: "Error", message: response["error"]);
             });
       }
     });
@@ -247,11 +243,38 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
         return showDialog(
             context: context,
             builder: (BuildContext context) {
-              return DialogMessage(
-                  title: "Message", message: response["message"]);
+              return DialogMessage(title: "Error", message: response["error"]);
             });
       }
     });
     return Center(child: CircularProgressIndicator());
+  }
+
+  Widget _restartCourses(UserProvider userProvider) {
+    userProvider.restartCourses().then((response) {
+      if (!response.containsKey("error")) {
+        currentUserCourses.clear();
+        setState(() {
+          _isLoadingRestartDB = false;
+        });
+        return null;
+      } else {
+        setState(() {
+          _isLoadingRestartDB = false;
+        });
+        return showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return DialogMessage(title: "Error", message: response["error"]);
+            });
+      }
+    });
+    return Container(
+      child: CircularProgressIndicator(
+        valueColor: AlwaysStoppedAnimation<Color>(HexColors.toColor("#FDE74C")) ,
+      ),
+      height: _fabHeight,
+      width: _fabHeight,
+    );
   }
 }

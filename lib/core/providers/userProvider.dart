@@ -180,7 +180,10 @@ class UserProvider extends ChangeNotifier {
   }
 
   Future<Map<String, dynamic>> createCourse() async {
-    return await apiClient.createCourse(
-        _currentUser, "${_tokenType} ${_token}");
+    return await apiClient.createCourse(_currentUser, "${_tokenType} ${_token}");
+  }
+
+  Future<Map<String, dynamic>> restartCourses() async {
+    return await apiClient.restartCourses(_currentUser, "${_tokenType} ${_token}");
   }
 }
