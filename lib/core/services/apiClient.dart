@@ -95,4 +95,16 @@ class ApiClient {
       return response;  
     }
   }
+
+  Future<Map<String, dynamic>> getCourseDetails(User currentUser, int courseId, String token) async {
+    try {
+      Map<String, dynamic> headers = { HttpHeaders.authorizationHeader: token };
+      Response<Map> response = await _dio.get("/${currentUser.username}/courses/${courseId}", options: Options(headers: headers));
+      return response.data;
+    } on DioError catch (error) {
+      Map<String, dynamic> response = { "error": "An error has occured" };
+      if (error.response != null && error.response.data != null && error.response.data.containsKey("error")) response = error.response.data;
+      return response; 
+    }
+  }
 }

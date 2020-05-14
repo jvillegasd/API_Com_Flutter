@@ -186,4 +186,8 @@ class UserProvider extends ChangeNotifier {
   Future<Map<String, dynamic>> restartCourses() async {
     return await apiClient.restartCourses(_currentUser, "${_tokenType} ${_token}");
   }
+
+  Future<Map<String, dynamic>> getCourseDetails(int courseId) async {
+    return await apiClient.getCourseDetails(_currentUser, courseId, "${_tokenType} ${_token}");
+  }
 }

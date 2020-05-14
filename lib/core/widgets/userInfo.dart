@@ -2,17 +2,16 @@ import 'package:flutter/material.dart';
 
 class UserInfo extends StatelessWidget {
   final String userEmail;
-  final String userPassword;
   final String userFullname;
   final String username;
+  final int userId;
 
-  const UserInfo({ this.userEmail, this.userPassword, this.userFullname, this.username });
+  const UserInfo({ this.userId, this.userEmail, this.userFullname, this.username });
 
   @override
   Widget build(BuildContext context) {
     String info = "Username: ${username}\n" +
-                  "Email: ${userEmail}\n" +
-                  "Password: ${userPassword}\n";
+                  "Email: ${userEmail}\n";
     return Card(
       child: Column(
         mainAxisSize: MainAxisSize.min,
