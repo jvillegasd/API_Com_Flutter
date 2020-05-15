@@ -154,6 +154,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
     return (_isLoadingAddCourse)
         ? _addCourse(userProvider)
         : FloatingActionButton(
+          heroTag: null,
             onPressed: () {
               setState(() {
                 _isLoadingAddCourse = true;
@@ -167,6 +168,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   Widget _logoutButton(UserProvider userProvider) {
     return FloatingActionButton(
+      heroTag: null,
       onPressed: () async {
         await userProvider.logOut();
       },
@@ -181,6 +183,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
     return (_isLoadingRestartDB)
         ? _restartCourses(userProvider)
         : FloatingActionButton(
+          heroTag: null,
             onPressed: () {
               setState(() {
                 _isLoadingRestartDB = true;

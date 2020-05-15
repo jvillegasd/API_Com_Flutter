@@ -3,9 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:simple_api_consumer_login/core/providers/userProvider.dart';
 import '../pages/login.dart';
 import '../widgets/dialogMessage.dart';
-import '../models/student.dart';
-import '../models/professor.dart';
 import '../widgets/userInfo.dart';
+import '../models/courseMember.dart';
 
 class CourseDetails extends StatefulWidget {
   int courseId;
@@ -17,8 +16,8 @@ class CourseDetails extends StatefulWidget {
 
 class CourseDetailsState extends State<CourseDetails> {
   bool _isLoading = true;
-  Professor _courseProfessor;
-  List<Student> _studentList = new List<Student>();
+  CourseMember _courseProfessor;
+  List<CourseMember> _studentList = new List<CourseMember>();
 
   @override
   void initState() {
@@ -33,28 +32,23 @@ class CourseDetailsState extends State<CourseDetails> {
       if (userProvider.isLogged) {
         if (!_isLoading) {
           return Scaffold(
-            appBar: AppBar(title: Text("Course details")),
-            body: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                UserInfo(
-                  userId: _courseProfessor.id,
-                  userEmail: _courseProfessor.email,
-                  userFullname: _courseProfessor.name,
-                  username: _courseProfessor.username,
-                ),
-                Container(
-                  child: Column(
-                    children: <Widget>[
-                      Text("Student list"),
-                      _list()
-                    ],
-                  ),
-                )
-              ],
-            )
-          );
+              appBar: AppBar(title: Text("Course details")),
+              body: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  UserInfo(courseMember: _courseProfessor, type: "Professor"),
+                  Container(
+                    child: Expanded(
+                        child: Column(
+                      children: <Widget>[
+                        Text("Student list"),
+                        Flexible(child: _list())
+                      ],
+                    )),
+                  )
+                ],
+              ));
         } else {
           return Scaffold(
             appBar: AppBar(title: Text("Courses")),
@@ -79,8 +73,8 @@ class CourseDetailsState extends State<CourseDetails> {
       shrinkWrap: true,
       itemCount: _studentList.length,
       itemBuilder: (context, index) {
-        Student student = _studentList[index];
-        return UserInfo(userId: student.id, userEmail: student.email, userFullname: student.name, username: student.username);
+        CourseMember student = _studentList[index];
+        return UserInfo(courseMember: student, type: "Student");
       },
     );
   }
@@ -88,15 +82,26 @@ class CourseDetailsState extends State<CourseDetails> {
   Widget _getCourseDetails(UserProvider userProvider) {
     userProvider.getCourseDetails(widget.courseId).then((response) {
       if (!response.containsKey("error")) {
-        _courseProfessor = Professor(
+        _courseProfessor = CourseMember(
             response["professor"]["name"],
             response["professor"]["username"],
             response["professor"]["email"],
-            response["professor"]["id"]);
+            response["professor"]["course_id"],
+            response["professor"]["phone"],
+            response["professor"]["city"],
+            response["professor"]["country"],
+            response["professor"]["birthday"]);
         List<dynamic> responseList = response["students"];
         for (var element in responseList) {
-          Student student = Student(element["name"], element["username"],
-              element["email"], element["id"]);
+          CourseMember student = CourseMember(
+              element["name"],
+              element["username"],
+              element["email"],
+              element["course_id"],
+              element["phone"],
+              element["city"],
+              element["country"],
+              element["birthday"]);
           _studentList.add(student);
         }
         setState(() {

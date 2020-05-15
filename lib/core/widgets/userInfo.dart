@@ -1,26 +1,34 @@
 import 'package:flutter/material.dart';
+import '../models/courseMember.dart';
+import '../widgets/customAlertDialog.dart';
 
 class UserInfo extends StatelessWidget {
-  final String userEmail;
-  final String userFullname;
-  final String username;
-  final int userId;
+  String type;
+  CourseMember courseMember;
 
-  const UserInfo({ this.userId, this.userEmail, this.userFullname, this.username });
+  UserInfo({ this.courseMember, this.type});
 
   @override
   Widget build(BuildContext context) {
-    String info = "Username: ${username}\n" +
-                  "Email: ${userEmail}\n";
+    String info = "Username: ${courseMember.username}\n" +
+                  "Email: ${courseMember.email}\n";
     return Card(
+      elevation: 10,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13.5)),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           ListTile(
             leading: Icon(Icons.account_circle),
-            title: Text(userFullname),
+            title: Text(courseMember.name),
             subtitle: Text(info),
             isThreeLine: true,
+            onTap: () async {
+              await showDialog(
+                context: context,
+                builder: (BuildContext context) { return CustomAlertDialog(type: type, courseMember: courseMember); }
+              );
+            },
           )
         ],
       )

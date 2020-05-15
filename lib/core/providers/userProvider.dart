@@ -25,7 +25,7 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  authentication() async {
+  Future<void> authentication() async {
     SharedPreferences prefs = await _prefs;
     bool sharedLogged = prefs.getBool('isLogged') ?? false;
     final String sharedEmail = prefs.getString('email') ?? null;
@@ -37,7 +37,7 @@ class UserProvider extends ChangeNotifier {
     final String sharedTokenType = prefs.getString("tokenType") ?? null;
     bool sharedRememberUser = prefs.getBool("rememberUser") ?? false;
 
-    if (await _somethingIsCached()) {
+    if (await _somethingIsCached(prefs)) {
       if (sharedLogged && await _checkToken(prefs)) {
         _currentUser =
             User(sharedEmail, sharedPassword, sharedUsername, sharedName);
@@ -45,7 +45,7 @@ class UserProvider extends ChangeNotifier {
         _refreshToken = sharedRefreshToken;
         _tokenType = sharedTokenType;
         _isLogged = true;
-      }
+      } else _isLogged = false;
     }
     _rememberUser = sharedRememberUser;
     notifyListeners();
@@ -56,7 +56,7 @@ class UserProvider extends ChangeNotifier {
     final String sharedEmail = prefs.getString('email') ?? null;
     final String sharedPassword = prefs.getString('password') ?? null;
 
-    if (await _somethingIsCached()) {
+    if (await _somethingIsCached(prefs)) {
       if (sharedEmail == newUser.email && sharedPassword == newUser.password) {
         if (await _checkToken(prefs)) {
           final String sharedName = prefs.getString("name");
@@ -152,8 +152,7 @@ class UserProvider extends ChangeNotifier {
       return {"error": response["error"]};
   }
 
-  Future<bool> _somethingIsCached() async {
-    SharedPreferences prefs = await _prefs;
+  Future<bool> _somethingIsCached(SharedPreferences prefs) async {
     final String sharedEmail = prefs.getString('email') ?? null;
     final String sharedPassword = prefs.getString('password') ?? null;
     final String sharedUsername = prefs.getString('username') ?? null;
@@ -176,18 +175,32 @@ class UserProvider extends ChangeNotifier {
   }
 
   Future<Map<String, dynamic>> getCourses() async {
+    await this.authentication();
     return await apiClient.getCourses(_currentUser, "${_tokenType} ${_token}");
   }
 
   Future<Map<String, dynamic>> createCourse() async {
+    await this.authentication();
     return await apiClient.createCourse(_currentUser, "${_tokenType} ${_token}");
   }
 
   Future<Map<String, dynamic>> restartCourses() async {
+    await this.authentication();
     return await apiClient.restartCourses(_currentUser, "${_tokenType} ${_token}");
   }
 
   Future<Map<String, dynamic>> getCourseDetails(int courseId) async {
+    await this.authentication();
     return await apiClient.getCourseDetails(_currentUser, courseId, "${_tokenType} ${_token}");
+  }
+
+  Future<Map<String, dynamic>> getStudentDetails(int studentId) async {
+    await this.authentication();
+    return await apiClient.getStudentDetails(_currentUser, studentId, "${_tokenType} ${_token}");
+  }
+
+  Future<Map<String, dynamic>> getProfessorDetails(int professorId) async {
+    await this.authentication();
+    return await apiClient.getProfessorDetails(_currentUser, professorId, "${_tokenType} ${_token}");
   }
 }
