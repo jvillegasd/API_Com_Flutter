@@ -45,7 +45,14 @@ class UserProvider extends ChangeNotifier {
         _refreshToken = sharedRefreshToken;
         _tokenType = sharedTokenType;
         _isLogged = true;
-      } else _isLogged = false;
+      } else {
+        _isLogged = false;
+        if (sharedRememberUser) {
+          _currentUser =
+              User(sharedEmail, sharedPassword, sharedUsername, sharedName);
+        } else
+          await prefs.clear();
+      }
     }
     _rememberUser = sharedRememberUser;
     notifyListeners();
@@ -181,26 +188,31 @@ class UserProvider extends ChangeNotifier {
 
   Future<Map<String, dynamic>> createCourse() async {
     await this.authentication();
-    return await apiClient.createCourse(_currentUser, "${_tokenType} ${_token}");
+    return await apiClient.createCourse(
+        _currentUser, "${_tokenType} ${_token}");
   }
 
   Future<Map<String, dynamic>> restartCourses() async {
     await this.authentication();
-    return await apiClient.restartCourses(_currentUser, "${_tokenType} ${_token}");
+    return await apiClient.restartCourses(
+        _currentUser, "${_tokenType} ${_token}");
   }
 
   Future<Map<String, dynamic>> getCourseDetails(int courseId) async {
     await this.authentication();
-    return await apiClient.getCourseDetails(_currentUser, courseId, "${_tokenType} ${_token}");
+    return await apiClient.getCourseDetails(
+        _currentUser, courseId, "${_tokenType} ${_token}");
   }
 
   Future<Map<String, dynamic>> getStudentDetails(int studentId) async {
     await this.authentication();
-    return await apiClient.getStudentDetails(_currentUser, studentId, "${_tokenType} ${_token}");
+    return await apiClient.getStudentDetails(
+        _currentUser, studentId, "${_tokenType} ${_token}");
   }
 
   Future<Map<String, dynamic>> getProfessorDetails(int professorId) async {
     await this.authentication();
-    return await apiClient.getProfessorDetails(_currentUser, professorId, "${_tokenType} ${_token}");
+    return await apiClient.getProfessorDetails(
+        _currentUser, professorId, "${_tokenType} ${_token}");
   }
 }

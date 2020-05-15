@@ -122,6 +122,7 @@ class ApiClient {
 
   Future<Map<String, dynamic>> getProfessorDetails(User currentUser, int professorId, String token) async {
     try {
+      print("/${currentUser.username}/professors/${professorId}");
       Map<String, dynamic> headers = { HttpHeaders.authorizationHeader: token };
       Response<Map> response = await _dio.get("/${currentUser.username}/professors/${professorId}", options: Options(headers: headers));
       return response.data;

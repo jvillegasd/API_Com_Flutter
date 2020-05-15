@@ -11,8 +11,8 @@ class Login extends StatefulWidget {
 
 class LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
-  final controllerEmail = new TextEditingController();
-  final controllerPass = new TextEditingController();
+  var controllerEmail = new TextEditingController();
+  var controllerPass = new TextEditingController();
   bool _isLoading = true;
 
   @override
@@ -29,6 +29,11 @@ class LoginState extends State<Login> {
           double phoneWidth = MediaQuery.of(context).size.width;
           double phoneHeight = MediaQuery.of(context).size.height;
 
+          if (userProvider.rememberUser && userProvider.currentUser != null && userProvider.currentUser.email != null && userProvider.currentUser.password != null) {
+            controllerEmail = TextEditingController(text: userProvider.currentUser.email);
+            controllerPass = TextEditingController(text: userProvider.currentUser.password);
+          }
+          print(userProvider.currentUser);
           return Scaffold(
               appBar: AppBar(title: Text("Login")),
               body: Center(

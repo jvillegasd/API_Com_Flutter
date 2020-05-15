@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/courseMember.dart';
-import '../widgets/customAlertDialog.dart';
+import '../widgets/courseMemberDetail.dart';
 
 class UserInfo extends StatelessWidget {
   String type;
@@ -26,7 +26,7 @@ class UserInfo extends StatelessWidget {
             onTap: () async {
               await showDialog(
                 context: context,
-                builder: (BuildContext context) { return CustomAlertDialog(type: type, courseMember: courseMember); }
+                builder: (BuildContext context) { return CourseMemberDetail(type: type, courseMember: courseMember); }
               );
             },
           )
