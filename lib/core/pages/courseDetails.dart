@@ -16,6 +16,8 @@ class CourseDetails extends StatefulWidget {
 
 class CourseDetailsState extends State<CourseDetails> {
   bool _isLoading = true;
+  double _fabHeight = 56.0;
+  bool _addLoading = false;
   CourseMember _courseProfessor;
   List<CourseMember> _studentList = new List<CourseMember>();
 
@@ -48,18 +50,30 @@ class CourseDetailsState extends State<CourseDetails> {
                     )),
                   )
                 ],
-              ));
+              ),
+              floatingActionButton: (!_addLoading)
+                  ? FloatingActionButton(
+                      heroTag: null,
+                      onPressed: () {
+                        setState(() {
+                          _addLoading = true;
+                        });
+                      },
+                      tooltip: "Create a new student",
+                      child: Icon(Icons.add),
+                      elevation: 50.0,
+                    )
+                  : _createStudent(userProvider));
         } else {
           return Scaffold(
-            appBar: AppBar(title: Text("Courses")),
-            body: Center(
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                  _getCourseDetails(userProvider),
-                  Text("Loading course details")
-                ])),
-          );
+              appBar: AppBar(title: Text("Courses")),
+              body: Center(
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                    _getCourseDetails(userProvider),
+                    Text("Loading course details")
+                  ])));
         }
       } else {
         return Login();
@@ -76,6 +90,41 @@ class CourseDetailsState extends State<CourseDetails> {
         CourseMember student = _studentList[index];
         return UserInfo(courseMember: student, type: "Student");
       },
+    );
+  }
+
+  Widget _createStudent(UserProvider userProvider) {
+    userProvider.createStudent(widget.courseId).then((response) {
+      if (!response.containsKey("error")) {
+        CourseMember student = CourseMember(
+            response["name"],
+            response["username"],
+            response["email"],
+            response["id"],
+            "no phone",
+            "no city",
+            "no country",
+            "no birthdate");
+        setState(() {
+          _studentList.add(student);
+          _addLoading = false;
+        });
+        return null;
+      } else {
+        setState(() {
+          _addLoading = false;
+        });
+        return showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return DialogMessage(title: "Error", message: response["error"]);
+            });
+      }
+    });
+    return Container(
+      child: CircularProgressIndicator(),
+      height: _fabHeight,
+      width: _fabHeight,
     );
   }
 

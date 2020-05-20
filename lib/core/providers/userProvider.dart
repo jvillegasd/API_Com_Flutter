@@ -187,6 +187,7 @@ class UserProvider extends ChangeNotifier {
   }
 
   Future<Map<String, dynamic>> createCourse() async {
+    print("asdasdasdasdasdas");
     await this.authentication();
     return await apiClient.createCourse(
         _currentUser, "${_tokenType} ${_token}");
@@ -214,5 +215,11 @@ class UserProvider extends ChangeNotifier {
     await this.authentication();
     return await apiClient.getProfessorDetails(
         _currentUser, professorId, "${_tokenType} ${_token}");
+  }
+
+  Future<Map<String, dynamic>> createStudent(int courseId) async {
+    await this.authentication();
+    return await apiClient.createStudent(
+        _currentUser, courseId, "${_tokenType} ${_token}");
   }
 }

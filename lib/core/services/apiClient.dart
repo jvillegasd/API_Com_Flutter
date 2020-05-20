@@ -132,4 +132,17 @@ class ApiClient {
       return response; 
     }
   }
+
+  Future<Map<String, dynamic>> createStudent(User currentUser, int courseId, String token) async {
+    try {
+      Map<String, dynamic> headers = { HttpHeaders.authorizationHeader: token };
+      Map<String, dynamic> body = { "courseId": courseId };
+      Response<Map> response = await _dio.post("/${currentUser.username}/students", options: Options(headers: headers), data: body);
+      return response.data;
+    } on DioError catch (error) {
+      Map<String, dynamic> response = { "error": "An error has occured" };
+      if (error.response != null && error.response.data != null && error.response.data.containsKey("error")) response = error.response.data;
+      return response; 
+    }
+  }
 }

@@ -202,9 +202,9 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
       if (!response.containsKey("error")) {
         Course newCourse = Course(response["id"], response["name"],
             response["professor"], response["students"]);
+            currentUserCourses.add(newCourse);
         setState(() {
           _isLoadingAddCourse = false;
-          currentUserCourses.add(newCourse);
         });
         return null;
       } else {
@@ -256,8 +256,8 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin {
   Widget _restartCourses(UserProvider userProvider) {
     userProvider.restartCourses().then((response) {
       if (!response.containsKey("error")) {
-        currentUserCourses.clear();
         setState(() {
+          currentUserCourses.clear();
           _isLoadingRestartDB = false;
         });
         return null;
